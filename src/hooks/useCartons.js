@@ -54,5 +54,5 @@ export function useCartons() {
     }))
   }, [])
 
-  return { cartons, addCarton, updateCarton, deleteCarton, cycleStatus, nextNumber }
+  return { cartons, setCartons, addCarton, updateCarton, deleteCarton, cycleStatus, nextNumber }
 }
