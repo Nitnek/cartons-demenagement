@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard'
 import CartonList from './components/CartonList'
 import CartonForm from './components/CartonForm'
 import Modal from './components/Modal'
+import Login from './components/Login'
 
 const TABS = [
   { id: 'dashboard', label: 'Accueil', icon: '📊' },
@@ -12,8 +13,11 @@ const TABS = [
 
 export default function App() {
   const { cartons, addCarton, updateCarton, deleteCarton, cycleStatus, nextNumber } = useCartons()
+  const [auth, setAuth] = useState(() => sessionStorage.getItem('auth') === '1')
   const [tab, setTab] = useState('dashboard')
   const [modal, setModal] = useState(null) // null | 'add' | { carton }
+
+  if (!auth) return <Login onSuccess={() => setAuth(true)} />
 
   function handleSave(data) {
     if (modal === 'add') {
