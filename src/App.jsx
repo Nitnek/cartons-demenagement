@@ -22,19 +22,20 @@ export default function App() {
   const [modal, setModal] = useState(null)
   const [patStored, setPatStored] = useState(hasPat)
 
-  if (!auth) return <Login onSuccess={() => setAuth(true)} />
-
+  // Tous les hooks avant tout return conditionnel
   useEffect(() => {
-    if (!hasPat()) return
+    if (!auth || !hasPat()) return
     fetchFromGist().then(data => {
       if (data) setCartons(data)
     })
-  }, [patStored])
+  }, [auth, patStored])
 
   useEffect(() => {
-    if (!hasPat()) return
+    if (!auth || !hasPat()) return
     pushToGist(cartons)
   }, [cartons])
+
+  if (!auth) return <Login onSuccess={() => setAuth(true)} />
 
   function handleSave(data) {
     if (modal === 'add') addCarton(data)
