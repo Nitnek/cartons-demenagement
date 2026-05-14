@@ -1,14 +1,31 @@
 import { useState } from 'react'
 import StatusBadge from './StatusBadge'
 
+function normalize(s) {
+  return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+}
+
 function highlight(text, query) {
   if (!query || !text) return text
-  const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'))
-  return parts.map((part, i) =>
-    part.toLowerCase() === query.toLowerCase()
-      ? <mark key={i} className="bg-yellow-400/30 text-yellow-200 rounded px-0.5">{part}</mark>
-      : part
-  )
+  const normText = normalize(text)
+  const normQuery = normalize(query)
+  if (!normQuery) return text
+
+  const parts = []
+  let lastEnd = 0
+  let idx = normText.indexOf(normQuery, lastEnd)
+  while (idx !== -1) {
+    if (idx > lastEnd) parts.push(text.slice(lastEnd, idx))
+    parts.push(
+      <mark key={idx} className="bg-yellow-400/30 text-yellow-200 rounded px-0.5">
+        {text.slice(idx, idx + normQuery.length)}
+      </mark>
+    )
+    lastEnd = idx + normQuery.length
+    idx = normText.indexOf(normQuery, lastEnd)
+  }
+  if (lastEnd < text.length) parts.push(text.slice(lastEnd))
+  return parts
 }
 
 function CartonCard({ carton, onEdit, onDelete, onCycleStatus, searchQuery }) {
@@ -83,11 +100,11 @@ export default function CartonList({ cartons, onEdit, onDelete, onCycleStatus })
   const filtered = cartons
     .filter(c => {
       if (!search) return true
-      const q = search.toLowerCase()
+      const q = normalize(search)
       return (
-        c.description?.toLowerCase().includes(q) ||
-        c.room?.toLowerCase().includes(q) ||
-        `${c.prefix}${c.number}`.toLowerCase().includes(q)
+        (c.description && normalize(c.description).includes(q)) ||
+        (c.room && normalize(c.room).includes(q)) ||
+        normalize(`${c.prefix}${c.number}`).includes(q)
       )
     })
     .filter(c => filterRoom === 'all' || c.room === filterRoom)
